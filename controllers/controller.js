@@ -28,7 +28,7 @@ async function signIn(req, res, next) {
             }
         });
         let match = null;
-        if (users && token) {
+        if (users) {
             match = passwordHash.verify(req.body.password, users.password);
         }
 
