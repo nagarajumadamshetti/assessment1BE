@@ -55,15 +55,10 @@ async function signIn(req, res, next) {
 }
 async function updatePassword(req, res, next) {
     try {
-        const users = models.Users.findOne({
-            where: {
-                username: req.body.username
-            }
-        });
         const hashedValue = passwordHash.generate(req.body.newPassword);
         req.body.newPassword = hashedValue;
         console.log("entered updatepassword")
-        const users = await models.Users.update(req.body.newPassword, {
+        const users = await models.Users.update({password:req.body.newPassword}, {
             where: {
                 username: req.body.username
             }
@@ -130,5 +125,6 @@ module.exports = {
     signIn,
     signUp,
     showActivities,
-    submitActivities
+    submitActivities,
+    updatePassword
 };
