@@ -2,19 +2,20 @@ const createError = require('http-errors');
 const express = require('express');
 
 const bodyParser = require('body-parser');
-
+const cors=require('cors');
 
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const exjwt = require('express-jwt');
 const indexRouter = require('./routes/index');
 const app = express();
-const PORT = process.env.PORT||5000 ;
+const PORT = process.env.PORT||4000 ;
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(cors());
 
 app.use('/', indexRouter);
 
@@ -36,9 +37,7 @@ app.use(function (req, res, next) {
 // error handler
 app.use(function (err, req, res, next) {
   res.json({
-    success: false,
     err
-
   });
 });
 app.listen(PORT, () => {
