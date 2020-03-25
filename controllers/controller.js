@@ -1,28 +1,29 @@
 const models = require('../models');
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
-async function signUp(req, res, next) {
-    try {
-        console.log("entered signup1")
-        const hashedValue = passwordHash.generate(req.body.password);
-        req.body.password = hashedValue;
-        console.log("entered signup2")
-        const users = await models.Users.create(req.body);
-        res.status(200).json({
-            users,
-            message: "SignUp successful"
-        });
-    } catch (error) {
-        res.status(404);
-        next(error);
-    }
-}
+// async function signUp(req, res, next) {
+//     try {
+//         console.log("entered signup1")
+//         const hashedValue = passwordHash.generate(req.body.password);
+//         req.body.password = hashedValue;
+//         console.log("entered signup2")
+//         const users = await models.Users.create(req.body);
+//         res.status(200).json({
+//             users,
+//             message: "SignUp successful"
+//         });
+//     } catch (error) {
+//         res.status(404);
+//         next(error);
+//     }
+// }
 
 async function signIn(req, res, next) {
     try {
         // let token = req.headers['access-token'];
         let token = null;
-        const users = await models.Users.findOne({
+        let users=null;
+        users = await models.Users.findOne({
             where: {
                 username: req.body.username
             }
@@ -30,6 +31,14 @@ async function signIn(req, res, next) {
         let match = null;
         if (users) {
             match = passwordHash.verify(req.body.password, users.password);
+        }
+        else{
+            console.log("entered signup1")
+        const hashedValue = passwordHash.generate(req.body.password);
+        req.body.password = hashedValue;
+        console.log("entered signup2")
+         users = await models.Users.create(req.body);
+         match=true
         }
 
         if (match) {
@@ -53,26 +62,26 @@ async function signIn(req, res, next) {
         next(error);
     }
 }
-async function updatePassword(req, res, next) {
-    try {
-        const hashedValue = passwordHash.generate(req.body.newPassword);
-        req.body.newPassword = hashedValue;
-        console.log("entered updatepassword")
-        const users = await models.Users.update({ password: req.body.newPassword }, {
-            where: {
-                username: req.body.username
-            }
-        });
-        res.status(200).json({
-            users,
-            message: "update successful"
-        });
-        res.send(users)
-    } catch (error) {
-        next(error);
-    }
-}
-async function showActivities(req, res, next) {
+// async function updatePassword(req, res, next) {
+//     try {
+//         const hashedValue = passwordHash.generate(req.body.newPassword);
+//         req.body.newPassword = hashedValue;
+//         console.log("entered updatepassword")
+//         const users = await models.Users.update({ password: req.body.newPassword }, {
+//             where: {
+//                 username: req.body.username
+//             }
+//         });
+//         res.status(200).json({
+//             users,
+//             message: "update successful"
+//         });
+//         res.send(users)
+//     } catch (error) {
+//         next(error);
+//     }
+// }
+const  getActivities=async(req, res, next) =>{
     try {
         // const token = req.headers['access-token'];
         // let verified = jwt.verify(token, 'keyboard cat 4 ever');
@@ -112,7 +121,7 @@ async function showActivities(req, res, next) {
         res.send(null);
     }
 }
-async function submitActivities(req, res, next) {
+async function postActivities(req, res, next) {
     try {
         // const token = req.headers['access-token'];
         // let verified = jwt.verify(token, 'keyboard cat 4 ever');
@@ -151,8 +160,8 @@ async function submitActivities(req, res, next) {
 }
 module.exports = {
     signIn,
-    signUp,
-    showActivities,
-    submitActivities,
-    updatePassword
+    // signUp,
+    getActivities,
+    postActivities,
+    // updatePassword
 };

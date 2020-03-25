@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "postgres",
-    "database": "assessment1",
+    "database": "assessment1BEOnly",
     "host": "127.0.0.1",
     "dialect": "postgres",
     "operatorsAliases": false
