@@ -180,8 +180,17 @@ const userReport = async (req, res, next) =>
     const data = await models.Activities.findAll({
         where: {
             userId: users.id,
+            // [date]: [{
+            //     from: {
+            //         [Op.between]: [moment().subtract(7, 'days').toDate(), moment()]
+            //     }
+            // }, {
+            //     to: {
+            //         [Op.between]: [moment().subtract(7, 'days').toDate(), moment()]
+            //     }
+            // }]
             date:{
-                [Op.gte]: moment().subtract(7, 'days').toDate()
+                [Op.between]: [moment().subtract(7, 'days').toDate(),moment().toDate()]
             }
         }
     });
