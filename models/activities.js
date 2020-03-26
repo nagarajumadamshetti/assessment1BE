@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Activities = sequelize.define('Activities', {
     title: DataTypes.STRING,
-    date: DataTypes.DATE,
+    date: DataTypes.DATEONLY,
     start_time: DataTypes.TIME,
     end_time: DataTypes.TIME,
     userId: DataTypes.INTEGER

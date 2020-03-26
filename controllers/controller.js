@@ -1,6 +1,9 @@
 const models = require('../models');
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
+const moment=require('moment');
+const { Op } = require('sequelize')
+
 // async function signUp(req, res, next) {
 //     try {
 //         console.log("entered signup1")
@@ -17,6 +20,7 @@ const jwt = require('jsonwebtoken');
 //         next(error);
 //     }
 // }
+
 
 async function signIn(req, res, next) {
     try {
@@ -62,6 +66,7 @@ async function signIn(req, res, next) {
         next(error);
     }
 }
+
 // async function updatePassword(req, res, next) {
 //     try {
 //         const hashedValue = passwordHash.generate(req.body.newPassword);
@@ -81,6 +86,7 @@ async function signIn(req, res, next) {
 //         next(error);
 //     }
 // }
+
 const getActivities = async (req, res, next) => {
     try {
         // const token = req.headers['access-token'];
@@ -136,17 +142,22 @@ async function postActivities(req, res, next) {
             console.log(users);
             console.log(users.id)
             // let newData = { ...req.body, username: payloadId.id }
-            let newData = { ...req.body.actSub, userId: users.id }
-            console.log(newData);
-            if (users) {
-                const activities = await models.Activities.create(newData);
 
+            if (users) {
+                let newData = { ...req.body.actSub, userId: users.id }
+                console.log(newData);
+                const activities = await models.Activities.create(newData);
+                res.status(200).json({
+                    activities,
+                    message: "activities adding successful"
+                });
             }
-            res.status(200).json({
-                activities,
-                message: "activities adding successful"
-            });
-            // res.send(acti)
+            else{
+                res.status(404).json({
+                    success:false,
+                    message:"user not found"
+                })
+            }
         }
         else {
             res.status(400).json({
@@ -158,10 +169,35 @@ async function postActivities(req, res, next) {
         next(error);
     }
 }
+
+const userReport = async (req, res, next) =>
+ {
+    const users = await models.Users.findOne({
+        where: {
+            username: req.body.username
+        }
+    });
+    const data = await models.Activities.findAll({
+        where: {
+            userId: users.id,
+            date:{
+                [Op.gte]: moment().subtract(7, 'days').toDate()
+            }
+        }
+    });
+    console.log(data);
+    if(data)
+    {
+        res.status(200).json({
+            data
+        })
+    }
+}
 module.exports = {
     signIn,
     // signUp,
     getActivities,
     postActivities,
-    // updatePassword
+    // updatePassword,
+    userReport
 };
