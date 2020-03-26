@@ -1,6 +1,6 @@
 const createError = require('http-errors');
 const express = require('express');
-
+const cookieParser = require('cookie-parser'); 
 const bodyParser = require('body-parser');
 const cors=require('cors');
 
@@ -15,6 +15,7 @@ const PORT = process.env.PORT||4000 ;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(cookieParser());  
 app.use(cors());
 
 app.use('/', indexRouter);

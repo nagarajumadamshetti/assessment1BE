@@ -1,8 +1,10 @@
 const models = require('../models');
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
-const moment=require('moment');
+const moment = require('moment');
 const { Op } = require('sequelize')
+const express = require('express');
+const app = express();
 
 // async function signUp(req, res, next) {
 //     try {
@@ -43,6 +45,9 @@ async function signIn(req, res, next) {
             console.log("entered signup2")
             users = await models.Users.create(req.body);
             match = true
+            // app.get('/',(req,res,next)=>{
+
+            // })
         }
 
         if (match) {
@@ -152,10 +157,10 @@ async function postActivities(req, res, next) {
                     message: "activities adding successful"
                 });
             }
-            else{
+            else {
                 res.status(404).json({
-                    success:false,
-                    message:"user not found"
+                    success: false,
+                    message: "user not found"
                 })
             }
         }
@@ -170,8 +175,7 @@ async function postActivities(req, res, next) {
     }
 }
 
-const userReport = async (req, res, next) =>
- {
+const userReport = async (req, res, next) => {
     const users = await models.Users.findOne({
         where: {
             username: req.body.username
@@ -180,23 +184,41 @@ const userReport = async (req, res, next) =>
     const data = await models.Activities.findAll({
         where: {
             userId: users.id,
-            // [date]: [{
-            //     from: {
-            //         [Op.between]: [moment().subtract(7, 'days').toDate(), moment()]
-            //     }
-            // }, {
-            //     to: {
-            //         [Op.between]: [moment().subtract(7, 'days').toDate(), moment()]
-            //     }
-            // }]
-            date:{
-                [Op.between]: [moment().subtract(7, 'days').toDate(),moment().toDate()]
+            date: {
+                [Op.between]: [moment().subtract(7, 'days').toDate(), moment().toDate()]
             }
         }
     });
+    // await models.Activities.count({
+    //     where:
+    //     {
+    //         date: {
+    //             [Op.between]: [moment().subtract(7, 'days').toDate(), moment().toDate()]
+    //         }
+    //     },
+    //     group: ['Activities.date']
+    // }).then((c) => {
+    //     for (let index = 0; index < c.length; index++) {
+    //         const element = c[index];
+    //         console.log("There are " + element + " ")    
+    //     }
+    //     console.log("There are " + c + " ")
+    // })
+    // await models.Activities.sum('columnName',
+    //     {
+    //         where:
+    //         {
+    //             age:
+    //             {
+    //                 [Op.gt]: 5
+    //             }
+    //         }
+    //     }
+    // ).then(sum => {
+    //     // will be 50
+    // })
     console.log(data);
-    if(data)
-    {
+    if (data) {
         res.status(200).json({
             data
         })
