@@ -39,10 +39,10 @@ async function signIn(req, res, next) {
             match = passwordHash.verify(req.body.password, users.password);
         }
         else {
-            console.log("entered signup1")
+            // console.log("entered signup1")
             const hashedValue = passwordHash.generate(req.body.password);
             req.body.password = hashedValue;
-            console.log("entered signup2")
+            // console.log("entered signup2")
             users = await models.Users.create(req.body);
             match = true
             // app.get('/',(req,res,next)=>{
@@ -96,29 +96,35 @@ const getActivities = async (req, res, next) => {
     try {
         // const token = req.headers['access-token'];
         // let verified = jwt.verify(token, 'keyboard cat 4 ever');
-        console.log(' The console.log::::');
+        // console.log(' The console.log::::');
         let verified = true
         if (verified) {
             // let payloadId = jwt.decode(token);
-            console.log(req.body);
-            console.log(req.query);
-            console.log(req.params);
+            // console.log(req.body);
+            // console.log(req.query);
+            // console.log(req.params);
             const users = await models.Users.findOne({
                 where: {
                     username: req.body.username || req.query.username
                 }
             });
-            console.log(users)
-            console.log("USers")
+            // console.log(users)
+            // console.log("USers")
             const data = await models.Activities.findAll({
+                attributes: ['title', 'start_time', 'end_time', 'date'],
                 where: {
-                    userId: users.id
+                    userId: users.id,
+                    date:moment(req.body.date).toDate()
+                    // end_time: {
+                    //     [Op.ne]: null
+                    //   }
+                    // end_time:!null
                 }
             });
-            console.log(data);
+            // console.log(data);
             if (data) {
                 res.send(data)
-                console.log(data)
+                // console.log(data)
             }
             else
                 res.send(null);
@@ -128,7 +134,7 @@ const getActivities = async (req, res, next) => {
         }
     } catch (error) {
         // next(error);
-        console.log(error)
+        // console.log(error)
         res.send(null);
     }
 }
@@ -144,13 +150,13 @@ async function postActivities(req, res, next) {
                     username: req.body.username
                 }
             });
-            console.log(users);
-            console.log(users.id)
+            // console.log(users);
+            // console.log(users.id)
             // let newData = { ...req.body, username: payloadId.id }
 
             if (users) {
                 let newData = { ...req.body.actSub, userId: users.id }
-                console.log(newData);
+                // console.log(newData);
                 const activities = await models.Activities.create(newData);
                 res.status(200).json({
                     activities,
@@ -182,11 +188,15 @@ const userReport = async (req, res, next) => {
         }
     });
     const data = await models.Activities.findAll({
+        attributes: ['title', 'start_time', 'end_time', 'date'],
         where: {
             userId: users.id,
             date: {
                 [Op.between]: [moment().subtract(7, 'days').toDate(), moment().toDate()]
-            }
+            },
+            end_time: {
+                [Op.ne]: null
+              }
         }
     });
     // await models.Activities.count({
@@ -217,7 +227,7 @@ const userReport = async (req, res, next) => {
     // ).then(sum => {
     //     // will be 50
     // })
-    console.log(data);
+    // console.log(data);
     if (data) {
         res.status(200).json({
             data
