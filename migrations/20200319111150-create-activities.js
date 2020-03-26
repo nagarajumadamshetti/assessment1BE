@@ -20,7 +20,7 @@ module.exports = {
       end_time: {
         type: Sequelize.TIME
       },
-      username: {
+      userId: {
         type: Sequelize.INTEGER
       },
       createdAt: {

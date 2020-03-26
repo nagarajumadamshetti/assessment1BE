@@ -22,7 +22,7 @@ async function signIn(req, res, next) {
     try {
         // let token = req.headers['access-token'];
         let token = null;
-        let users=null;
+        let users = null;
         users = await models.Users.findOne({
             where: {
                 username: req.body.username
@@ -32,13 +32,13 @@ async function signIn(req, res, next) {
         if (users) {
             match = passwordHash.verify(req.body.password, users.password);
         }
-        else{
+        else {
             console.log("entered signup1")
-        const hashedValue = passwordHash.generate(req.body.password);
-        req.body.password = hashedValue;
-        console.log("entered signup2")
-         users = await models.Users.create(req.body);
-         match=true
+            const hashedValue = passwordHash.generate(req.body.password);
+            req.body.password = hashedValue;
+            console.log("entered signup2")
+            users = await models.Users.create(req.body);
+            match = true
         }
 
         if (match) {
@@ -81,7 +81,7 @@ async function signIn(req, res, next) {
 //         next(error);
 //     }
 // }
-const  getActivities=async(req, res, next) =>{
+const getActivities = async (req, res, next) => {
     try {
         // const token = req.headers['access-token'];
         // let verified = jwt.verify(token, 'keyboard cat 4 ever');
@@ -101,7 +101,7 @@ const  getActivities=async(req, res, next) =>{
             console.log("USers")
             const data = await models.Activities.findAll({
                 where: {
-                    username: users.id
+                    userId: users.id
                 }
             });
             console.log(data);
@@ -136,7 +136,7 @@ async function postActivities(req, res, next) {
             console.log(users);
             console.log(users.id)
             // let newData = { ...req.body, username: payloadId.id }
-            let newData = { ...req.body.actSub, username: users.id }
+            let newData = { ...req.body.actSub, userId: users.id }
             console.log(newData);
             if (users) {
                 const activities = await models.Activities.create(newData);
