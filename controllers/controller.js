@@ -29,6 +29,7 @@ async function signIn(req, res, next) {
         // let token = req.headers['access-token'];
         let token = null;
         let users = null;
+        let msg=null;
         users = await models.Users.findOne({
             where: {
                 username: req.body.username
@@ -37,6 +38,8 @@ async function signIn(req, res, next) {
         let match = null;
         if (users) {
             match = passwordHash.verify(req.body.password, users.password);
+            msg=0;
+            console.log("match value is ::  "+match)
         }
         else {
             // console.log("entered signup1")
@@ -48,18 +51,28 @@ async function signIn(req, res, next) {
             // app.get('/',(req,res,next)=>{
 
             // })
+            msg=1;
         }
 
         if (match) {
+            res.send({
+                value:true,
+                msg:msg
+            });
             //login
             // token = await jwt.sign({ id: users.id }, 'keyboard cat 4 ever', { expiresIn: '1h' }); // Signing the token
 
             // users.jwtToken=token;
             // browser.cookie
-            res.send(users);
+            
         }
         else {
-            res.send(null);
+            res.send(
+                {
+                    value:false,
+                    msg:msg
+                }   
+            );
             // res.status(400).json({
             //     message: "signin Unsuccessful"
             // });
@@ -92,13 +105,12 @@ async function signIn(req, res, next) {
 
 const getActivities = async (req, res, next) => {
     try {
-        console.log(req.body.date);
         let verified = true
         if (verified) {
 
             const users = await models.Users.findOne({
                 where: {
-                    username: req.body.username || req.query.username
+                    username: req.params.userName
                 }
             });
 
@@ -106,7 +118,7 @@ const getActivities = async (req, res, next) => {
                 attributes: ['title', 'start_time', 'end_time', 'date'],
                 where: {
                     userId: users.id,
-                    date: moment(req.body.date).toDate()
+                    date: moment(req.params.date).toDate()
                 }
             });
 
@@ -122,6 +134,7 @@ const getActivities = async (req, res, next) => {
         }
     } catch (error) {
         res.send(null);
+        next(error);
     }
 }
 const postActivities = async (req, res, next) => {
@@ -147,59 +160,61 @@ const postActivities = async (req, res, next) => {
             console.log("entered point 5")
         }
     } catch (error) {
-        res.send("did not posted")
-        // next(error);
+        res.send(null);
+        next(error);
     }
 }
 
 const userReport = async (req, res, next) => {
-    const users = await models.Users.findOne({
-        where: {
-            username: req.body.username
-        }
-    });
-    const data = await models.Activities.findAll({
-        attributes: ['title', 'start_time', 'end_time', 'date'],
-        where: {
-            userId: users.id,
-            date: {
-                [Op.between]: [moment().subtract(7, 'days').toDate(), moment().toDate()]
-            },
-            end_time: {
-                [Op.ne]: null
+    try {
+        const users = await models.Users.findOne({
+            where: {
+                username: req.params.userName
             }
+        });
+        const data = await models.Activities.findAll({
+            attributes: ['title', 'start_time', 'end_time', 'date'],
+            where: {
+                userId: users.id,
+                date: {
+                    [Op.between]: [moment().subtract(7, 'days').toDate(), moment().toDate()]
+                },
+                end_time: {
+                    [Op.ne]: null
+                }
+            }
+        });
+        if (data) {
+            const report = data;
+            let hm = {};
+            if (report)
+                report.map((el, key) => {
+                    if (hm[el.date] === undefined) {
+                        hm[el.date] = {};
+                        let a = moment(new Date())
+                        let b = moment(el.date);
+                        hm[el.date] = {
+                            id: a.diff(b, 'days'),
+                            date: el.date,
+                            count: 1,
+                            duration: Math.floor(Math.abs((moment(el.end_time, 'HH:mm:ss').diff(moment(el.start_time, 'HH:mm:ss'))) / 3600000)),
+                        };
+                    }
+                    else {
+                        let count = hm[el.date].count + 1;
+                        let duration = hm[el.date].duration + Math.floor(Math.abs((moment(el.end_time, 'HH:mm:ss').diff(moment(el.start_time, 'HH:mm:ss'))) / 3600000))
+                        hm[el.date].count = count;
+                        hm[el.date].duration = duration;
+                    }
+                });
+            res.send(hm);
         }
-    });
-    if (data) {
-        const report = data;
-        let hm = {};
-        // console.log("report is" + report);
-        if (report)
-            report.map((el, key) => {
-                if (hm[el.date] === undefined) {
-                    hm[el.date] = {};
-                    let a = moment(new Date())
-                    let b = moment(el.date);
-                    // console.log("the diff in time is" + moment(el.end_time, 'HH:mm:ss').diff(moment(el.start_time, 'HH:mm:ss')))
-                    hm[el.date] = {
-                        id: a.diff(b, 'days'),
-                        date: el.date,
-                        count: 1,
-                        duration: Math.floor(Math.abs((moment(el.end_time, 'HH:mm:ss').diff(moment(el.start_time, 'HH:mm:ss'))) / 3600000)),
-                    };
-                }
-                else {
-                    let count = hm[el.date].count + 1;
-                    // console.log("the duration is::::" + hm[el.date].duration)
-                    let duration = hm[el.date].duration + Math.floor(Math.abs((moment(el.end_time, 'HH:mm:ss').diff(moment(el.start_time, 'HH:mm:ss'))) / 3600000))
-                    hm[el.date].count = count;
-                    hm[el.date].duration = duration;
-                }
-            });
-        res.send(hm);
-    }
-    else {
+        else {
+            res.send(null);
+        }
+    } catch (error) {
         res.send(null);
+        next(error);
     }
 }
 module.exports = {
